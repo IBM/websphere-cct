@@ -1,5 +1,7 @@
 # Change History:
 
+- February 17th, 2021
+  - ConfigReport.py may now be run with no parameters as all necessary properties have been given default values.
 - January 30th, 2020
   - Added various JMS reports.
   - Made ReportList and ConfigurationDumpFiles optional properties for simplified command line syntax.
