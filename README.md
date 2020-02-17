@@ -1,5 +1,5 @@
 # websphere-cct
-WebSphere Configuration Comparison Tool (WCCT) is a light weight comparisson utility for WebSphere Application Server Traditional profile.  Use of this tool is a two step process.  The first step is gathering data from the configuration reposiroty using the wsadmin script ConfigDump.py.  The second is generating HTML reports to display configurationi differences.  Manually configured application servers and resources are likely to have configuration differences. Finding these differences by navigating to configuration panels is error prone and time consuming. Applications servers and resources should be periodically checked for configuration differences.
+WebSphere Configuration Comparison Tool (WCCT) is a light weight comparison utility for WebSphere Application Server Traditional profile.  Use of this tool is a two step process.  The first step is gathering data from the configuration repository using the wsadmin script ConfigDump.py.  The second is generating HTML reports to display configuration differences.  Manually configured application servers and resources are likely to have configuration differences. Finding these differences by navigating to configuration panels is error prone and time consuming. Applications servers and resources should be periodically checked for configuration differences.  Note, please reference WASConfigurationComparisonTool.pdf for full documentation.  
 
 WCCT provides a facility to check multiple server and resource configurations for:
 - potential inconsistent behavior between application servers in a cluster.
@@ -44,7 +44,7 @@ Tar File Contents:
 
 Change history:
 - February 17th, 2021
-  - ConfigReport.py no longer has any required parameters/properties.  
+  - ConfigReport.py no longer has any required parameters/properties.
 - January 30th, 2020
   - Added various JMS reports.
   - Made ReportList and ConfigurationDumpFiles optional properties for simplified command line syntax.
@@ -110,3 +110,13 @@ Change history:
   - Updated PDF presentation with ConfigReport.py prerequisites and syntax.
 - January 17th, 2018
   - Initial publication
+
+
+
+Regards,
+Dennis 
+	Dennis Riddlemoser, Accelerated Value Specialist
+World Wide IBM Software Accelerated Value Program
+Phone: (720) 342-5689
+Email: riddlemo@us.ibm.com
+Visit IBM Software Accelerated Value Program Online 
