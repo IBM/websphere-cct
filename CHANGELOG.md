@@ -1,6 +1,6 @@
 # Change History:
 
-- February 17th, 2021
+- February 17th, 2020
   - ConfigReport.py may now be run with no parameters as all necessary properties have been given default values.
 - January 30th, 2020
   - Added various JMS reports.
