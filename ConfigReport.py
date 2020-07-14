@@ -56,7 +56,7 @@
 # 2020/02/17  0051 DWR  All properties are optional as they have been given default values, may now be run without any parameters
 # 2020/07/10  0052 THI  Add URLProvider and URL report
 # 2020/07/10  0053 THI  Add J2CConnectionFactory and J2CAdminObject report
-# 2020/07/10  0054 THI  Add MQQueueConnectionFactory and MQQueue report
+# 2020/07/10  0054 THI  Add MQConnectionFactory,MQ{Queue,Topic}ConnectionFactory, MQQueue, MQTopic reports
 
 import ConfigUtils as cu
 import sys
@@ -1202,13 +1202,27 @@ def getResourceReportDefinitions():
 	], \
 #End Ref0053
 #Begin Ref0054
+	'MQConnectionFactory':[{'Title':'MQ Connection Factory','ReportName':'mqConnectionFactoryRsc','ConfigPath':[]},
+	                       {'Title':'MQ Connection Pool','ReportName':'connectionPoolRsc','ConfigPath':['connectionPool']},
+	                       {'Title':'MQ Session Pool','ReportName':'connectionPoolRsc','ConfigPath':['sessionPool']},
+	                       {'Title':'JAAS Mapping','ReportName':'mappingModuleRsc','ConfigPath':['mapping']},
+	                       {'Title':'MQ Provider','ReportName':'jmsProviderRsc','ConfigPath':['provider']},
+	],
 	'MQQueueConnectionFactory':[{'Title':'MQ Queue Connection Factory','ReportName':'mqQueueConnectionFactoryRsc','ConfigPath':[]},
 	                            {'Title':'MQ Connection Pool','ReportName':'connectionPoolRsc','ConfigPath':['connectionPool']},
 	                            {'Title':'MQ Session Pool','ReportName':'connectionPoolRsc','ConfigPath':['sessionPool']},
 	                            {'Title':'JAAS Mapping','ReportName':'mappingModuleRsc','ConfigPath':['mapping']},
 	                            {'Title':'MQ Provider','ReportName':'jmsProviderRsc','ConfigPath':['provider']},
 	],
+	'MQTopicConnectionFactory':[{'Title':'MQ Topic Connection Factory','ReportName':'mqTopicConnectionFactoryRsc','ConfigPath':[]},
+	                            {'Title':'MQ Connection Pool','ReportName':'connectionPoolRsc','ConfigPath':['connectionPool']},
+	                            {'Title':'MQ Session Pool','ReportName':'connectionPoolRsc','ConfigPath':['sessionPool']},
+	                            {'Title':'JAAS Mapping','ReportName':'mappingModuleRsc','ConfigPath':['mapping']},
+	                            {'Title':'MQ Provider','ReportName':'jmsProviderRsc','ConfigPath':['provider']},
+	],
 	'MQQueue':[{'Title':'MQ Queue ','ReportName':'mqQueueRsc','ConfigPath':[]},\
+	           {'Title':'MQ Provider','ReportName':'jmsProviderRsc','ConfigPath':['provider']},	], \
+	'MQTopic':[{'Title':'MQ Topic ','ReportName':'mqTopicRsc','ConfigPath':[]},\
 	           {'Title':'MQ Provider','ReportName':'jmsProviderRsc','ConfigPath':['provider']},	], \
 #End Ref0054
 	}  
@@ -1349,7 +1363,8 @@ def ResourceReport(report):
 def reportAllResourcesByName():
 	resourceTypes=['Security','SSLConfig','DataSource','J2CResourceAdapter','JDBCProvider','ObjectCacheInstance','ServletCacheInstance','SIBus',\
 				   'ResourceEnvironmentProvider','ResourceEnvEntry','JMSProvider','GenericJMSConnectionFactory','GenericJMSDestination', #Ref0015 #Ref0018 #Ref0045 #Ref0046 #Ref0047 \
-				   'J2CActivationSpec','JAASAuthData','URLProvider','URL','J2CConnectionFactory','J2CAdminObject','MQQueueConnectionFactory','MQQueue' ] #Ref0048 #Ref0049 #Ref0052 #Ref0053 #Ref0054
+				   'J2CActivationSpec','JAASAuthData','URLProvider','URL','J2CConnectionFactory','J2CAdminObject',\
+				   'MQConnectionFactory','MQQueueConnectionFactory','MQTopicConnectionFactory','MQQueue','MQTopic' ] #Ref0048 #Ref0049 #Ref0052 #Ref0053 #Ref0054
 	resourceReports = getResourceReportDefinitions()
 	global ReportOnlyMismatched
 	originalReportOnlyMismatched = cu.ReportOnlyMismatched
@@ -1771,9 +1786,15 @@ if len(reportList) > 0:
 			ResourceReport(report)                         #Ref0053
 		elif reportType == 'J2CAdminObject':               #Ref0053
 			ResourceReport(report)                         #Ref0053
+		elif reportType == 'MQConnectionFactory':          #Ref0054
+			ResourceReport(report)                         #Ref0054
 		elif reportType == 'MQQueueConnectionFactory':     #Ref0054
 			ResourceReport(report)                         #Ref0054
+		elif reportType == 'MQTopicConnectionFactory':     #Ref0054
+			ResourceReport(report)                         #Ref0054
 		elif reportType == 'MQQueue':                      #Ref0054
+			ResourceReport(report)                         #Ref0054
+		elif reportType == 'MQTopic':                      #Ref0054
 			ResourceReport(report)                         #Ref0054
 		else:
 			cu.printMsg('ERROR: Invalid report type: ' + reportType,False)
