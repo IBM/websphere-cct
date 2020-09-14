@@ -288,7 +288,7 @@ def reportProperties(rptParms):
 				cu.printException('Excpetion in reportProperties',sys.exc_info())
 				continue
 		if len(names) > 0:
-			names.sort()
+			names = sorted(names, key=str.lower)
 			tableData=[]
 			match=[]
 			for name in names:
