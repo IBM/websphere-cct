@@ -58,7 +58,7 @@
 # 2020/07/10  0053 THI  Add J2CConnectionFactory and J2CAdminObject report
 # 2020/07/10  0054 THI  Add MQConnectionFactory,MQ{Queue,Topic}ConnectionFactory, MQQueue, MQTopic reports
 # 2020/09/14  0055 DWR  Add JAAS auth Alias to JMS Connection Factory report
-# 2020/09/14  0056 DWR  Add JAAS auth Alias to JMS Connection Factory report
+# 2020/09/14  0056 DWR  Removing ResourcesNotMatched
 
 import ConfigUtils as cu
 import sys
@@ -918,6 +918,7 @@ def j2cAuthReport(rptParms):
 	for configID in configIDs:
 		authDataAlias = 'NOT_FOUND'
 		mapping = cu.getConfigFromPath([configID] + rptParms['ConfigPath'])
+		mappingCell = cu.getConfigIDCell(configID)
 		if len(mapping['authDataAlias'].strip()) > 0 and not mapping['authDataAlias'] == '[]':
 			authAlliasIDs = cu.getConfigIDsByAttrValueFromDict('.*#JAASAuthData_.*',mapping['authDataAlias'],'alias',False,cu.MasterDict)
 			for authAlliasID in authAlliasIDs:
