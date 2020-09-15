@@ -57,6 +57,8 @@
 # 2020/07/10  0052 THI  Add URLProvider and URL report
 # 2020/07/10  0053 THI  Add J2CConnectionFactory and J2CAdminObject report
 # 2020/07/10  0054 THI  Add MQConnectionFactory,MQ{Queue,Topic}ConnectionFactory, MQQueue, MQTopic reports
+# 2020/09/14  0055 DWR  Add JAAS auth Alias to JMS Connection Factory report
+# 2020/09/14  0056 DWR  Add JAAS auth Alias to JMS Connection Factory report
 
 import ConfigUtils as cu
 import sys
@@ -905,6 +907,45 @@ def ciphersReport(rptParms):
 	rptParms['Tables'].append(ciphersDict)
 #Ref0015 End
 
+#Begin Ref0055
+#########################################################################################################
+# J2C Authenticaiton Aliases associated with J2C connection factories
+#########################################################################################################
+def j2cAuthReport(rptParms):
+	configIDs = rptParms['ServerList']
+
+	authDataAliases = []
+	for configID in configIDs:
+		authDataAlias = 'NOT_FOUND'
+		mapping = cu.getConfigFromPath([configID] + rptParms['ConfigPath'])
+		if len(mapping['authDataAlias'].strip()) > 0 and not mapping['authDataAlias'] == '[]':
+			authAlliasIDs = cu.getConfigIDsByAttrValueFromDict('.*#JAASAuthData_.*',mapping['authDataAlias'],'alias',False,cu.MasterDict)
+			for authAlliasID in authAlliasIDs:
+				if mappingCell == cu.getConfigIDCell(authAlliasID):
+					authDataAlias = authAlliasID
+					break
+		authDataAliases.append(authDataAlias)
+	
+	attrs = cu.PropertiesDict['jaasAuthDataRsc:attributes'].split(',')
+	tableData = []
+	for attr in attrs:
+		row = []
+		for authDataAlias in authDataAliases:
+			if authDataAlias == 'NOT_FOUND':
+				row.append('not defined')
+			else:
+				row.append(cu.MasterDict[authDataAlias][attr])
+		tableData.append(row)
+		
+	match=[]
+	for row in tableData:
+		match.append(cu.listElementsMatch(row))
+	authDataDict = {'RowHeaders':attrs,'TableData':tableData,'Match':match,'Title':rptParms['Title'],\
+					'FirstColumnHeader':'Attribute','Type':'Attributes','ConfigIDs':authDataAliases} 
+	rptParms['Tables'].append(authDataDict)
+
+#End Ref0055
+
 #########################################################################################################
 # Executes all server centric reports
 #########################################################################################################
@@ -1164,11 +1205,12 @@ def getResourceReportDefinitions():
 	], \
 #End Ref0045
 #Begin Ref0046
-	'GenericJMSConnectionFactory':[{'Title':'JMS Connectioin Factory','ReportName':'genericJMSConnectionFactoryRsc','ConfigPath':[]},\
+	'GenericJMSConnectionFactory':[{'Title':'JMS Connection Factory','ReportName':'genericJMSConnectionFactoryRsc','ConfigPath':[]},\
 								   {'Title':'Session Pool','ReportName':'connectionPoolRsc','ConfigPath':['sessionPool']},\
 								   {'Title':'JMS Provider','ReportName':'jmsProviderRsc','ConfigPath':['provider']},\
 								   {'Title':'Connection Pool','ReportName':'connectionPoolRsc','ConfigPath':['connectionPool']},\
-								   {'Title':'JAAS Mapping','ReportName':'mappingModuleRsc','ConfigPath':['mapping']}\
+								   {'Title':'JAAS Mapping','ReportName':'mappingModuleRsc','ConfigPath':['mapping']},\
+								   {'Title':'J2C Authentication Alias','ReportName':'jaasAuthDataRsc','ConfigPath':['mapping'],'ReportFunc':j2cAuthReport},#Ref0052\
 								  ],\
 #End Ref0046
 #Begin Ref0047
@@ -1366,61 +1408,51 @@ def reportAllResourcesByName():
 				   'J2CActivationSpec','JAASAuthData','URLProvider','URL','J2CConnectionFactory','J2CAdminObject',\
 				   'MQConnectionFactory','MQQueueConnectionFactory','MQTopicConnectionFactory','MQQueue','MQTopic' ] #Ref0048 #Ref0049 #Ref0052 #Ref0053 #Ref0054
 	resourceReports = getResourceReportDefinitions()
-	global ReportOnlyMismatched
-	originalReportOnlyMismatched = cu.ReportOnlyMismatched
-	loopParmsList = [['true',' with attribute values that don\'t match',' with attribute values that do not match only','NotMatched'],\
-					 ['false','','','']]
-	for loopParms in loopParmsList:
-		ReportOnlyMismatched = loopParms[0]
-		messageSuffix = loopParms[1]
-		titleSuffix = loopParms[2]
-		fileNameSuffix = loopParms[3]
-		cu.reportInitialize('Singleton resources and resources compared by name%s' % titleSuffix,'Resources%s' % fileNameSuffix)
-		cu.printMsg('Generating report of all of the following resource types by resource name%s: %s' % \
-					(messageSuffix,str(resourceTypes)),False)
-		for resourceType in resourceTypes:
-			cu.printMsg('\tGenerating reports for ' + resourceType,False)
-			names = []
+	cu.reportInitialize('Singleton resources and resources compared by name','Resources')
+	cu.printMsg('Generating report of all of the following resource types by resource name: %s' % \
+				(str(resourceTypes)),False)
+	for resourceType in resourceTypes:
+		cu.printMsg('\tGenerating reports for ' + resourceType,False)
+		names = []
+		if hasNoName(resourceType):
+			names = [resourceType]
+		else:
+			names = cu.getUniqueConfigAttrValues(resourceType,getNameAttribute(resourceType))
+		for name in names:
+			cu.printMsg('\t\tGenerating report for ' + name,False)
+			rptParms = {}
 			if hasNoName(resourceType):
-				names = [resourceType]
+				resources = cu.findConfigIDs('.*'+re.escape('#'+resourceType+'_')+'.*', True, cu.MasterDict)
+				resources = cu.sortByCellAndScope(resources,cu.getScopeSort,None) #Ref0015
+				rptParms={'ServerList':resources,'ColumnHeaderFunc':cu.getScope}
 			else:
-				names = cu.getUniqueConfigAttrValues(resourceType,getNameAttribute(resourceType))
-			for name in names:
-				cu.printMsg('\t\tGenerating report for ' + name,False)
-				rptParms = {}
+				nameAttr = getNameAttribute(resourceType) #Ref0015
+				list = []
+				resources = cu.getConfigIDsByAttrValueFromDict('.*'+re.escape('#'+resourceType+'_')+'.*',re.escape(name),nameAttr,False,cu.MasterDict) #Ref0015
+				for resource in resources:
+					if cu.MasterDict[resource][nameAttr] == name:  #Ref0015
+						list.append(resource)
+						list = cu.sortByCellAndScope(list,cu.getNameAndScopeSort,nameAttr) #Ref0015
+				rptParms={'ServerList':list,'ColumnHeaderFunc':cu.getNameAndScope}
+			for resourceReport in resourceReports[resourceType]:
+				rptParms['ConfigPath'] = resourceReport['ConfigPath']
 				if hasNoName(resourceType):
-					resources = cu.findConfigIDs('.*'+re.escape('#'+resourceType+'_')+'.*', True, cu.MasterDict)
-					resources = cu.sortByCellAndScope(resources,cu.getScopeSort,None) #Ref0015
-					rptParms={'ServerList':resources,'ColumnHeaderFunc':cu.getScope}
+					rptParms['Title'] = resourceReport['Title']
 				else:
-					nameAttr = getNameAttribute(resourceType) #Ref0015
-					list = []
-					resources = cu.getConfigIDsByAttrValueFromDict('.*'+re.escape('#'+resourceType+'_')+'.*',re.escape(name),nameAttr,False,cu.MasterDict) #Ref0015
-					for resource in resources:
-						if cu.MasterDict[resource][nameAttr] == name:  #Ref0015
-							list.append(resource)
-							list = cu.sortByCellAndScope(list,cu.getNameAndScopeSort,nameAttr) #Ref0015
-					rptParms={'ServerList':list,'ColumnHeaderFunc':cu.getNameAndScope}
-				for resourceReport in resourceReports[resourceType]:
-					rptParms['ConfigPath'] = resourceReport['ConfigPath']
-					if hasNoName(resourceType):
-						rptParms['Title'] = resourceReport['Title']
-					else:
-						rptParms['Title'] = '%s (%s)' % (resourceReport['Title'],name)
-					rptParms['ReportName'] = resourceReport['ReportName']
-					try:                                         #Ref0015
-						resourceReport['ReportFunc'](rptParms)   #Ref0015
-					except KeyError:                             #Ref0015
+					rptParms['Title'] = '%s (%s)' % (resourceReport['Title'],name)
+				rptParms['ReportName'] = resourceReport['ReportName']
+				try:                                         #Ref0015
+					resourceReport['ReportFunc'](rptParms)   #Ref0015
+				except KeyError:                             #Ref0015
 #						cu.Debug=True
 #						cu.printException('Exception in ResourceReport',sys.exc_info())  #Ref0015
 #						cu.Debug=False
-						reportConfigElementAttrList(rptParms)
-						reportProperties(rptParms)
-					except:                                                              #Ref0015
-						cu.printException('Exception in ResourceReport',sys.exc_info())  #Ref0015
-				cu.reportWrite(rptParms)
-		cu.reportFinalize()
-	cu.ReportOnlyMismatched = originalReportOnlyMismatched
+					reportConfigElementAttrList(rptParms)
+					reportProperties(rptParms)
+				except:                                                              #Ref0015
+					cu.printException('Exception in ResourceReport',sys.exc_info())  #Ref0015
+			cu.reportWrite(rptParms)
+	cu.reportFinalize()
 
 #Ref0021 Begin
 #########################################################################################################
