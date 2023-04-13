@@ -44,6 +44,12 @@ WCCT provides a facility to check multiple server and resource configurations fo
 - [ConfigReportFiles.py](ConfigReportFiles.py): Generates file system comparison reports
 - [WASConfigurationComparisonTool.pdf](WASConfigurationComparisonTool.pdf): Tool documentation
 
+## Issues / Support
+
+You are welcome to submit new enhancement requests or report [issues](https://github.com/IBM/websphere-cct/issues/new) (or pull requests), which will be considered on a "best-effort" basis.
+
+Please understand, however, that IBM support will not accept a support case for any issues with the WCCT tool itself.
+
 ## Contributing
 
 This project uses the [Developer's Certificate of Origin 1.1 (DCO)](https://github.com/hyperledger/fabric/blob/master/docs/source/DCO1.1.txt) see [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
